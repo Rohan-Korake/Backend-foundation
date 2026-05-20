@@ -141,3 +141,9 @@ Install dotenv to manage environment variables from a `.env` file.
 ```bash
 npm i dotenv
 ```
+
+Install nodemon to automatically restart the server when file changes are detected.
+
+```bash
+npm i nodemon
+```
