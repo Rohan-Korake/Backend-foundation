@@ -147,3 +147,15 @@ Install nodemon to automatically restart the server when file changes are detect
 ```bash
 npm i nodemon
 ```
+
+Installs Express framework for building backend APIs and handling routes.
+
+```bash
+npm i express
+```
+
+Enables CORS for handling cross-origin requests.
+
+```bash
+npm i cors
+```
