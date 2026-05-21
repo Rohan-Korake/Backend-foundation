@@ -124,3 +124,15 @@ Provides cryptographic functionality for hashing, encryption, and secure token g
 ```bash
 npm i crypto
 ```
+
+Installs Nodemailer for sending emails from the application.
+
+```bash
+npm i nodemailer
+```
+
+Installs Mailgen for generating beautiful email templates.
+
+```bash
+npm i mailgen
+```
