@@ -23,13 +23,13 @@ app.use(
   }),
 );
 
+// Mount health check routes
+import healthCheckRoute from "./routes/healthcheck.routes.js";
+app.use("/healthcheck", healthCheckRoute);
+
 // Default route for root URL
 app.use("/", (req, res) => {
   res.send("This is '/' route response");
 });
-
-// Mount health check routes
-import healthCheckRoute from "./routes/healthcheck.routes.js";
-app.use("/healthcheck", healthCheckRoute);
 
 export default app;

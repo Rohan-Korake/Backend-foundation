@@ -6,86 +6,39 @@ Backend Foundation is my personal backend learning repository where I document a
 
 Follow these terminal commands to set up the initial backend project structure from scratch.
 
-`Step 1:` Use the following command to create the project root folder:
+### Step 1: Create the project folder and move into it
 
 ```bash
-mkdir backend-foundation
-```
-
-`Step 2:` Move into the newly created project folder:
-
-```bash
+mkdir backend-foundation && \
 cd backend-foundation
 ```
 
-`Step 3:` Initialize a new Node.js project interactively. This command will prompt you to enter project details such as name, version, and description to generate the package.json file.
+### Step 2: Initialize the Node.js project and generate `package.json`
 
 ```bash
 npm init
 ```
 
-`Step 4:` Create the main project directories:
+### Step 3: Install Prettier as a development dependency
 
 ```bash
-mkdir public src
+npm install --save-dev --save-exact prettier
 ```
 
-`Step 5:` Move to the `src` folder and create subdirectories.
+### Step 4: Create the complete project folder structure in a single command
 
 ```bash
-cd src
+mkdir public src && \
+mkdir public/images && \
+cd src && \
+mkdir controllers models routes middlewares utils db validators && \
+touch app.js index.js && \
+touch controllers/.gitkeep models/.gitkeep routes/.gitkeep middlewares/.gitkeep utils/.gitkeep db/.gitkeep validators/.gitkeep && \
+cd .. && \
+touch public/images/.gitkeep .env .gitignore .prettierrc .prettierignore
 ```
 
-`Step 6:` Create subdirectories inside src to organize the backend structure.
-
-```bash
-mkdir controllers models routes middlewares utils db validators
-```
-
-`Step 7:` Create the main application files inside `src`:
-
-```bash
-touch app.js index.js
-```
-
-`Step 8:` Create `.gitkeep` files to ensure empty folders are tracked by
-
-```bash
-touch controllers/.gitkeep models/.gitkeep routes/.gitkeep middlewares/.gitkeep utils/.gitkeep db/.gitkeep validators/.gitkeep
-```
-
-`Step 9:` Move back to the root directory:
-
-```bash
-cd ..
-```
-
-`Step 10:`Navigate to the public folder:
-
-```bash
-cd public
-```
-
-`Step 11:`Create an `images` directory:
-
-```bash
-mkdir images
-```
-
-`Step 12:`Return back to the root directory:
-
-```bash
-cd ..
-cd ..
-```
-
-`Step 13:` Create environment and Git configuration files:
-
-```bash
-touch .env .gitignore
-```
-
-`Step 14:` Configure .gitignore
+### Step 5: Configure `.gitignore`
 
 ```bash
 node_modules/
@@ -95,19 +48,7 @@ node_modules/
 dist/
 ```
 
-`Step 15:` Install Prettier as a development dependency:
-
-```bash
-npm install --save-dev --save-exact prettier
-```
-
-`Step 16:`Create Prettier configuration files
-
-```bash
-touch .prettierrc .prettierignore
-```
-
-`Step 17:` Configure .prettierrc
+### Step 6: Configure `.prettierrc`
 
 ```bash
 {
@@ -121,7 +62,7 @@ touch .prettierrc .prettierignore
 }
 ```
 
-`Step 18:` Configure .prettierignore
+### Step 7: Configure `.prettierignore`
 
 ```bash
 node_modules
@@ -158,4 +99,10 @@ Enables CORS for handling cross-origin requests.
 
 ```bash
 npm i cors
+```
+
+Installs Mongoose for interacting with MongoDB using schemas and models.
+
+```bash
+npm i mongoose
 ```
