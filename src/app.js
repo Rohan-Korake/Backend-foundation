@@ -16,11 +16,20 @@ app.use(express.static("./public"));
 // cors configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || "https;//localhost:5500", //defines which frontend url are allowed to access the backend API.
+    origin: process.env.CORS_ORIGIN?.split(",") || "https;//localhost:5000", //defines which frontend url are allowed to access the backend API.
     credentials: true, // include cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // define HTTP methods allowed when accessing the API routes.
     allowedHeaders: ["Content-Type", "Authorization"], //define the type of header are allowed
   }),
 );
+
+// Default route for root URL
+app.use("/", (req, res) => {
+  res.send("This is '/' route response");
+});
+
+// Mount health check routes
+import healthCheckRoute from "./routes/healthcheck.routes.js";
+app.use("/healthcheck", healthCheckRoute);
 
 export default app;
