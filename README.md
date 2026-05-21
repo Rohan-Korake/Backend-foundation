@@ -106,3 +106,9 @@ Installs Mongoose for interacting with MongoDB using schemas and models.
 ```bash
 npm i mongoose
 ```
+
+Installs bcrypt for hashing and securing user passwords.
+
+```bash
+npm i bcrypt
+```
