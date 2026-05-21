@@ -112,3 +112,15 @@ Installs bcrypt for hashing and securing user passwords.
 ```bash
 npm i bcrypt
 ```
+
+Installs JSON Web Token for authentication and secure token generation.
+
+```bash
+npm i jsonwebtoken
+```
+
+Provides cryptographic functionality for hashing, encryption, and secure token generation.
+
+```bash
+npm i crypto
+```
