@@ -4,7 +4,7 @@ class apiError extends Error {
     statusCode, //HTTP response code
     message = "Something went wrong", //By default message
     errors = [], //detailed list of issues
-    stack = "", ////It creates a clean and readable debugging stack trace for custom errors
+    stack = "", //It creates a clean and readable debugging stack trace for custom errors
   ) {
     super(message); //Built-in Error class gets the message
     this.statusCode = statusCode;

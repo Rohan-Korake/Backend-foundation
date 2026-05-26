@@ -1,7 +1,6 @@
 import { text } from "express";
 import Mailgen from "mailgen";
 import nodeMailer from "nodemailer";
-import { user } from "../models/user.models";
 
 const sendEmail = async (options) => {
   const mailGenerator = new Mailgen({
@@ -30,8 +29,8 @@ const sendEmail = async (options) => {
     from: "backendfoundation@gmail.com",
     to: options.email,
     subject: options.subject,
-    text: options.emailTextual,
-    html: options.emailHtml,
+    text: emailTextual,
+    html: emailHtml,
   };
 
   //  handle the error
@@ -51,7 +50,7 @@ const emailVerificationMailContent = (username, verificationUrl) => {
       action: {
         instruction: "To verify user email please click on following button",
         button: {
-          color: "#d2ee19",
+          color: "#E8C552",
           text: "Verify Email",
           link: verificationUrl,
         },
@@ -71,7 +70,7 @@ const forgotPasswordMailContent = (username, forgotPasswordUrl) => {
       actions: {
         instruction: "To Reset Password please click on following button",
         button: {
-          color: "#c2d20f",
+          color: "#E8C552",
           text: "Forgot Password",
           link: forgotPasswordUrl,
         },

@@ -23,7 +23,11 @@ app.use(
   }),
 );
 
-// Mount health check routes
+// Mount register user route
+import authRouter from "./routes/auth.routes.js";
+app.use("/register", authRouter);
+
+// Mount health check route
 import healthCheckRoute from "./routes/healthcheck.routes.js";
 app.use("/healthcheck", healthCheckRoute);
 

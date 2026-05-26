@@ -39,11 +39,11 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    isEmialVerified: {
+    isEmailVerified: {
       type: Boolean,
       default: false,
     },
-    refreashToken: {
+    refreshToken: {
       type: String,
     },
     forgotPasswordToken: {
@@ -55,7 +55,7 @@ const userSchema = new Schema(
     emailVerificationToken: {
       type: String,
     },
-    emailVerificationExpir: {
+    emailVerificationExpiry: {
       type: Date,
     },
   },
@@ -67,17 +67,16 @@ const userSchema = new Schema(
 // Create pre mongoDB hook
 userSchema.pre("save", async function (next) {
   // if the password feild is not updated
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password")) return;
 
   // Hash the user password with 10 round and then store in DB
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 // check the password is correct or not using bcrypt compare
-userSchema.methods.isPasswordCorrect(async function (password) {
-  return await bcrypt.compare(this.password, password);
-});
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 // Generate Access Token using methods
 userSchema.methods.generateAccessToken = function () {
@@ -104,7 +103,7 @@ userSchema.methods.generateRefreshToken = function () {
     },
     process.env.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: REFRESH_TOKEN_EXPIRY,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     },
   );
 };
@@ -128,4 +127,4 @@ userSchema.methods.generateTemporaryToken = function () {
 };
 
 // Create and export User model from userSchema
-export const user = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
