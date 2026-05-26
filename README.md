@@ -136,3 +136,9 @@ Installs Mailgen for generating beautiful email templates.
 ```bash
 npm i mailgen
 ```
+
+Installs express-validator for validating and sanitizing incoming request data.
+
+```bash
+npm i express-validator
+```
