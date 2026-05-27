@@ -141,4 +141,41 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser };
+// logout the user and clear the cookie and tokens
+const logoutUser = asyncHandler(async (req, res) => {
+  // prevent the crash
+  if (!req.user || !req.user._id) {
+    return res
+      .status(401)
+      .json(new apiResponse(401, {}, "Unauthorized: No active session found"));
+  }
+
+  // find the database enrty and update this
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      // to change any field set is used
+      $set: {
+        refreshToken: "", // Clear token in DB
+      },
+    },
+    {
+      // This tells to give most updated object
+      new: true,
+    },
+  );
+
+  const options = {
+    httpOnly: true, //indicate these are secure cookies
+    secure: true, //only browser can manipulate
+  };
+
+  // respond back to user and clear the cookie
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new apiResponse(200, {}, "User logged out"));
+});
+
+export { registerUser, loginUser, logoutUser };
