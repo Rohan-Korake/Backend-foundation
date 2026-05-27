@@ -22,6 +22,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+// accept register user data
 const registerUser = asyncHandler(async (req, res) => {
   // Extract user credentials from the request body
   const { email, username, password } = req.body;
@@ -84,4 +85,60 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 });
 
-export { registerUser };
+// accpet login user data
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password, username } = req.body;
+
+  // check field are empty
+  if (!email) {
+    throw new apiError(400, "Email is required");
+  } else if (!username) {
+    throw new apiError(400, "Username is required");
+  }
+
+  // check user is exists or not
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new apiError(400, "User does not exists");
+  }
+
+  // check password is correct or not
+  const isPasswordValid = await user.isPasswordCorrect(password);
+  if (!isPasswordValid) {
+    throw new apiError(400, "Invalid credentails");
+  }
+
+  // once the credentails are valid generate tokens
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
+
+  // Fetch user profile and exclude all sensitive authentication fields
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+  );
+
+  const options = {
+    httpOnly: true, //indicate these are secure cookies
+    secure: true, //only browser can manipulate
+  };
+
+  // now respond back to user and set cookie
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new apiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged in successfully",
+      ),
+    );
+});
+
+export { registerUser, loginUser };

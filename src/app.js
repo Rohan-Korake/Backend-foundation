@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // This is Express middleware configuration used to handle incoming request data formats.
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 // Serve static files from public folder
 app.use(express.static("./public"));
+app.use(cookieParser());
 
 // cors configuration
 app.use(
@@ -23,9 +25,9 @@ app.use(
   }),
 );
 
-// Mount register user route
+// Mount auth routes
 import authRouter from "./routes/auth.routes.js";
-app.use("/register", authRouter);
+app.use("/api/v1/auth", authRouter);
 
 // Mount health check route
 import healthCheckRoute from "./routes/healthcheck.routes.js";

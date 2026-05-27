@@ -142,3 +142,9 @@ Installs express-validator for validating and sanitizing incoming request data.
 ```bash
 npm i express-validator
 ```
+
+Installs cookie-parser for parsing cookies from incoming client requests.
+
+```bash
+npm i cookie-parser
+```
