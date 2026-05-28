@@ -2,8 +2,15 @@ import { User } from "../models/user.models.js";
 import { apiError } from "../utils/api-error.js";
 import { apiResponse } from "../utils/api-response.js";
 import { asyncHandler } from "../utils/async-handler.js";
-import { emailVerificationMailContent, sendEmail } from "../utils/mail.js";
+import {
+  emailVerificationMailContent,
+  forgotPasswordMailContent,
+  sendEmail,
+} from "../utils/mail.js";
 import Mailgen from "mailgen";
+import jwt from "jsonwebtoken";
+import { use } from "react";
+import { response } from "express";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -178,4 +185,278 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, {}, "User logged out"));
 });
 
-export { registerUser, loginUser, logoutUser };
+// get the current user data
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new apiResponse(200, res.user, "Current user fetched successfully"));
+});
+
+// send email verification
+const verifyEmail = asyncHandler(async (req, res) => {
+  // Extract the verification token from the URL path parameters
+  const { verificationToken } = req.params;
+
+  // Send error response if the token is not present in url path
+  if (!verificationToken) {
+    throw new apiError(400, "Email Verification Token is missing");
+  }
+
+  // Hash the incoming plain-text token
+  let hashedToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+
+  // find the user using hash value and check the verification is valid or not
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpiry: { $gt: Date.now() },
+  });
+
+  // if the token is expired means the user is not found then show error
+  if (!user) {
+    throw new apiError(400, "Token is invalid or expired");
+  }
+
+  // Reset verification fields since email is verified
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpiry = undefined;
+
+  // Mark that email is verified
+  user.isEmailVerified = true;
+
+  // save the changes in database
+  await user.save({ validateBeforeSave: false });
+
+  // Send back a success response to the frontend
+  res
+    .status(200)
+    .json(new apiResponse(200, { isEmailVerified: true }, "Email is verified"));
+});
+
+// resend the email verification
+const resendEmailVerification = asyncHandler(async (req, res) => {
+  // Find the used in database
+  const user = await User.findById(res.user._id);
+
+  // send error response if the user in not exists
+  if (!user) {
+    throw new apiError(404, "Used is not exists");
+  }
+
+  // handle response if user is already verified email
+  if (user.isEmailVerified) {
+    throw new apiError(409, "Email is already verified");
+  }
+
+  // Generate tokens
+  const { unHashedToken, hashedToken, tokenExpiry } =
+    user.generateTemporaryToken();
+
+  // Update fields
+  user.emailVerificationToken = unHashedToken;
+  user.emailVerificationExpiry = tokenExpiry;
+
+  //   save the data in DB
+  await user.save({ validateBeforeSave: false });
+
+  //   send email to user
+  await sendEmail({
+    email: user.email,
+    subject: "Please verify your email",
+    mailGenContent: emailVerificationMailContent(
+      user.username,
+      `${req.protocol}://${req.get("host")}/verify-email/${unHashedToken}`,
+    ),
+  });
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, {}, "Email verification send successfully"));
+});
+
+// Refresh access and refresh tokens using a valid incoming refresh token
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  // Extract the refresh token from cookies or request body
+  const incomingRefreshToken =
+    req.cookies.refreshAccessToken || req.body.refreshToken;
+
+  // Send error response if token is not found
+  if (!incomingRefreshToken) {
+    throw new apiError(401, "Unauthorized access");
+  }
+
+  try {
+    // verify that incomingRefreshToken and REFRESH_TOKEN_SECRET is same or not
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+
+    // Fetch user from database and verify existence
+    const user = await User.findById(decodedToken?._id);
+
+    // if user not found in database send a error
+    if (!user) {
+      throw new apiError(401, "Invalid Refresh Token");
+    }
+
+    // Check the incomingRefreshToken with database refreshToken
+    if (incomingRefreshToken != user?.refreshToken) {
+      throw new apiError(401, "Refresh Token is Expired");
+    }
+
+    const options = {
+      httpOnly: true, //indicate these are secure cookies
+      secure: true, //only browser can manipulate
+    };
+
+    // generate Access And Refresh Token
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user._id);
+
+    // update token
+    user.refreshToken = newRefreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    // response back to request
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshTokenToken, options)
+      .json(
+        new apiResponse(
+          200,
+          {
+            accessToken,
+            newRefreshToken,
+          },
+          "Access Token refresh",
+        ),
+      );
+  } catch (error) {
+    throw new apiError(401, "Invalid Refresh Token");
+  }
+});
+
+// handle forgot password request
+const forgotPassword = asyncHandler(async (req, res) => {
+  // access the email from frontend
+  const { email } = req.body;
+
+  // find the used in database
+  const user = await User.findOne({ email });
+
+  // handle error if user not found
+  if (!user) {
+    throw new apiError(404, "User does not exists");
+  }
+
+  // Generate tokens
+  const { unHashedToken, hashedToken, tokenExpiry } =
+    user.generateTemporaryToken();
+
+  // update token in database
+  user.forgotPasswordToken = hashedToken;
+  user.forgotPasswordExpiry = tokenExpiry;
+
+  await user.save({ validateBeforeSave: false });
+
+  //   send email to user
+  await sendEmail({
+    email: user.email,
+    subject: "Password Reset request",
+    mailGenContent: forgotPasswordMailContent(
+      user.username,
+      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`,
+    ),
+  });
+
+  // respond back to frontend
+  return res
+    .status(200)
+    .json(
+      new apiResponse(200, {}, "Password reset mail has been send on email "),
+    );
+});
+
+const resetForgotPassword = asyncHandler(async (req, res) => {
+  // get the data
+  const { resetToken } = req.params;
+  const { newPassword } = req.body;
+
+  // create a hash token
+  let hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // find the user in database
+  const user = await User.findOne({
+    forgotPasswordToken: hashedToken,
+    forgotPasswordExpiry: { $gt: Data.now() },
+  });
+
+  // handle the error if user is not found
+  if (!user) {
+    throw new apiError(400, "Token is invalid or expired");
+  }
+
+  // update the database data fields
+  user.forgotPasswordExpiry = undefined;
+  user.forgotPasswordToken = undefined;
+
+  // set a new password
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  // response back to user
+  return res
+    .status(200)
+    .json(new apiResponse(200, {}, "Password reset successfully"));
+});
+
+// change the currect password
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  // get the old and new password
+  const { oldPassword, newPassword } = req.body;
+
+  // find the user in database
+  const user = await User.findById(req.user?._id);
+
+  // handle the error if user is not found
+  if (!user) {
+    throw new apiError(404, "User does not exists");
+  }
+
+  // Verify if the old password matches the database
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+  // if the password is not match to old database password throw error
+  if (!isPasswordValid) {
+    throw new apiError(400, "Invalid old password");
+  }
+
+  // update and save the password in database
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  // respond back to frontend
+  return res
+    .status(200)
+    .json(new apiResponse(200, {}, "Password changed successfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getCurrentUser,
+  verifyEmail,
+  resendEmailVerification,
+  refreshAccessToken,
+  forgotPassword,
+  resetForgotPassword,
+  changeCurrentPassword,
+};
