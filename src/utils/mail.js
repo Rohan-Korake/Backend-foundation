@@ -67,7 +67,7 @@ const forgotPasswordMailContent = (username, forgotPasswordUrl) => {
     body: {
       name: username,
       intro: "Welcome to our application and we are happy to connect with you",
-      actions: {
+      action: {
         instruction: "To Reset Password please click on following button",
         button: {
           color: "#E8C552",

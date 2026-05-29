@@ -27,7 +27,7 @@ app.use(
 
 // Mount auth routes
 import authRouter from "./routes/auth.routes.js";
-app.use("/api/v1/auth", authRouter);
+app.use("/auth", authRouter);
 
 // Mount health check route
 import healthCheckRoute from "./routes/healthcheck.routes.js";

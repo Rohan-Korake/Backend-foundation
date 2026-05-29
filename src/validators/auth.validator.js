@@ -48,8 +48,11 @@ const userChangeCurrentPassword = () => {
 // validate the user forgot password
 const userForgotPasswordvalidator = () => {
   return [
-    body("email").notEmpty(),
-    withMessage("Email is required").isEmail().withMessage("Email is invalid"),
+    body("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isEmail()
+      .withMessage("Email is invalid"),
   ];
 };
 

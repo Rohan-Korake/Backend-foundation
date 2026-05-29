@@ -9,8 +9,8 @@ import {
 } from "../utils/mail.js";
 import Mailgen from "mailgen";
 import jwt from "jsonwebtoken";
-import { use } from "react";
 import { response } from "express";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -56,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const { unHashedToken, hashedToken, tokenExpiry } =
     user.generateTemporaryToken();
 
-  user.emailVerificationToken = unHashedToken;
+  user.emailVerificationToken = hashedToken;
   user.emailVerificationExpiry = tokenExpiry;
 
   //   save the data in DB
@@ -237,8 +237,10 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 // resend the email verification
 const resendEmailVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
   // Find the used in database
-  const user = await User.findById(res.user._id);
+  const user = await User.findOne({ email });
 
   // send error response if the user in not exists
   if (!user) {
@@ -255,7 +257,7 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     user.generateTemporaryToken();
 
   // Update fields
-  user.emailVerificationToken = unHashedToken;
+  user.emailVerificationToken = hashedToken;
   user.emailVerificationExpiry = tokenExpiry;
 
   //   save the data in DB
@@ -303,7 +305,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     // Check the incomingRefreshToken with database refreshToken
-    if (incomingRefreshToken != user?.refreshToken) {
+    if (incomingRefreshToken != user.refreshToken) {
       throw new apiError(401, "Refresh Token is Expired");
     }
 
@@ -324,7 +326,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshTokenToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
       .json(
         new apiResponse(
           200,
@@ -381,10 +383,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
     );
 });
 
+// reset the forgot password
 const resetForgotPassword = asyncHandler(async (req, res) => {
   // get the data
   const { resetToken } = req.params;
   const { newPassword } = req.body;
+
+  console.log(resetToken);
 
   // create a hash token
   let hashedToken = crypto
@@ -395,8 +400,11 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
   // find the user in database
   const user = await User.findOne({
     forgotPasswordToken: hashedToken,
-    forgotPasswordExpiry: { $gt: Data.now() },
+    forgotPasswordExpiry: { $gt: Date.now() },
   });
+
+  console.log(Date.now());
+  console.log(user?.forgotPasswordExpiry);
 
   // handle the error if user is not found
   if (!user) {
