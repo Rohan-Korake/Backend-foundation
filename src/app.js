@@ -18,7 +18,7 @@ app.use(cookieParser());
 // cors configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || "https;//localhost:5000", //defines which frontend url are allowed to access the backend API.
+    origin: process.env.CORS_ORIGIN?.split(",") || "https://localhost:5000", //defines which frontend url are allowed to access the backend API.
     credentials: true, // include cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // define HTTP methods allowed when accessing the API routes.
     allowedHeaders: ["Content-Type", "Authorization"], //define the type of header are allowed
