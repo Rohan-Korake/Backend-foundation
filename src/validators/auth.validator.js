@@ -28,12 +28,7 @@ const userLoginValidator = () => {
       .withMessage("Email is required")
       .isEmail()
       .withMessage("Email is invalid"),
-    body("password")
-      .trim()
-      .notEmpty()
-      .withMessage("password is required")
-      .isLength({ min: 6, max: 10 })
-      .withMessage("Password length must be between the 6 to 10"),
+    body("password").trim().notEmpty().withMessage("password is required"),
   ];
 };
 

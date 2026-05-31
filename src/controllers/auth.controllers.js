@@ -98,20 +98,19 @@ const loginUser = asyncHandler(async (req, res) => {
 
   // check field are empty
   if (!email) {
-    throw new apiError(400, "Email is required");
+    res.status(400).json(new apiResponse(400, {}, "Email is required"));
   }
 
   // check user is exists or not
   const user = await User.findOne({ email });
   if (!user) {
-    throw new apiError(400, "User does not exists");
+    res.status(400).json(new apiResponse(400, {}, "User does not exists"));
   }
 
   // check password is correct or not
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
-    console.error("This ");
-    throw new apiError(400, "Invalid credentails");
+    res.status(401).json(new apiResponse(401, {}, "Invalid credentails"));
   }
 
   // once the credentails are valid generate tokens
