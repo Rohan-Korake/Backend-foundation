@@ -310,6 +310,12 @@ Retrieve the profile details of the currently authenticated user using the acces
 Authorization: Bearer <access_token>
 ```
 
+OR
+
+```http
+Cookie: accessToken=<httpOnly-cookie>
+```
+
 ---
 
 ### `POST /healthcheck`
@@ -328,6 +334,12 @@ Check whether the server is running and responding correctly.
 }
 ```
 
+OR
+
+```http
+Cookie: accessToken=<httpOnly-cookie>
+```
+
 ---
 
 ### `POST /auth/logout`
@@ -336,4 +348,10 @@ Check whether the server is running and responding correctly.
 
 ```http
 Authorization: Bearer <access_token>
+```
+
+OR
+
+```http
+Cookie: accessToken=<httpOnly-cookie>
 ```

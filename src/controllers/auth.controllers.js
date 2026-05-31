@@ -94,13 +94,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // accpet login user data
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password, username } = req.body;
+  const { email, password } = req.body;
 
   // check field are empty
   if (!email) {
     throw new apiError(400, "Email is required");
-  } else if (!username) {
-    throw new apiError(400, "Username is required");
   }
 
   // check user is exists or not
@@ -112,6 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // check password is correct or not
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
+    console.error("This ");
     throw new apiError(400, "Invalid credentails");
   }
 
@@ -126,8 +125,9 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const options = {
-    httpOnly: true, //indicate these are secure cookies
-    secure: true, //only browser can manipulate
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   };
 
   // now respond back to user and set cookie
@@ -140,8 +140,6 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
-          accessToken,
-          refreshToken,
         },
         "User logged in successfully",
       ),
@@ -173,8 +171,9 @@ const logoutUser = asyncHandler(async (req, res) => {
   );
 
   const options = {
-    httpOnly: true, //indicate these are secure cookies
-    secure: true, //only browser can manipulate
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   };
 
   // respond back to user and clear the cookie
@@ -327,16 +326,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .status(200)
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", newRefreshToken, options)
-      .json(
-        new apiResponse(
-          200,
-          {
-            accessToken,
-            newRefreshToken,
-          },
-          "Access Token refresh",
-        ),
-      );
+      .json(new apiResponse(200, {}, "Access Token refresh"));
   } catch (error) {
     throw new apiError(401, "Invalid Refresh Token");
   }

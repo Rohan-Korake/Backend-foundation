@@ -13,18 +13,15 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 // Serve static files from public folder
 app.use(express.static("./public"));
-app.use(cookieParser());
-
-// cors configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || "https://localhost:5000", //defines which frontend url are allowed to access the backend API.
-    credentials: true, // include cookies
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // define HTTP methods allowed when accessing the API routes.
-    allowedHeaders: ["Content-Type", "Authorization"], //define the type of header are allowed
+    origin: "http://localhost:5500",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   }),
 );
 
+app.use(cookieParser());
 // Mount auth routes
 import authRouter from "./routes/auth.routes.js";
 app.use("/auth", authRouter);

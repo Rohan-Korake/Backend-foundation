@@ -2,11 +2,13 @@ import { User } from "../models/user.models.js";
 import { apiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 // Verifies whether the JWT token is valid, original, and created using the correct secret key.
 // Middleware to verify user JWT token
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   // Get token from cookies OR Authorization header
+
   const token =
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");

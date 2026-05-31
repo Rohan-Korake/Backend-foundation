@@ -9,7 +9,7 @@ dotenv.config({
 });
 
 // Set server port from environment or use default
-const port = process.env.PORT || 6000;
+const port = process.env.PORT || 5500;
 
 // connect mongoDB then listen port
 connectMongoDB()
