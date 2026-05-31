@@ -11,6 +11,7 @@ import Mailgen from "mailgen";
 import jwt from "jsonwebtoken";
 import { response } from "express";
 import crypto from "crypto";
+import { log } from "console";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -35,13 +36,13 @@ const registerUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   // Check if a user already exists with the same username OR email
-  const existedUser = await User.findOne({
-    $or: [{ username }, { email }],
-  });
+  const existedUser = await User.findOne({ email });
 
-  // send error resposne
+  // send 409 resposne
   if (existedUser) {
-    throw new apiError(409, "Email is already exists");
+    return res
+      .status(409)
+      .json(new apiResponse(409, {}, "Email is already exists"));
   }
 
   // create user
@@ -79,15 +80,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //   handle error
   if (!createdUser) {
-    throw new apiError(500, "Something went wrong while registering the user");
+    return res
+      .status(500)
+      .json(new apiResponse(500, {}, "Something went wrong"));
   }
 
   //   respose back to request
   return res.status(200).json(
     new apiResponse(200, {
       user: createdUser,
-      message:
-        "User registered successfully and verification email has sent on your email",
+      message: "User registered successfully. Verification email sent.",
     }),
   );
 });
