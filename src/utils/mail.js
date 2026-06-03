@@ -1,12 +1,13 @@
 import { text } from "express";
 import Mailgen from "mailgen";
-import nodeMailer from "nodemailer";
+import { Resend } from "resend";
 
 const sendEmail = async (options) => {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const mailGenerator = new Mailgen({
     theme: "default",
     product: {
-      name: "Backend testing",
+      name: "Lamp Login Authentication",
       link: "https://github.com/Rohan-Korake/backend-foundation",
     },
   });
@@ -14,30 +15,17 @@ const sendEmail = async (options) => {
   const emailTextual = mailGenerator.generatePlaintext(options.mailGenContent); // Useful if email clients don’t support HTML.
   const emailHtml = mailGenerator.generate(options.mailGenContent); //Generates the HTML version of the email
 
-  // Responsible for sending emails.
-  const transporter = nodeMailer.createTransport({
-    host: process.env.MAILTRAP_SMTP_HOST,
-    port: process.env.MAILTRAP_SMTP_PORT,
-    auth: {
-      user: process.env.MAILTRAP_SMTP_USER,
-      pass: process.env.MAILTRAP_SMTP_PASS,
-    },
-  });
-
-  // Mail options for sending email using Nodemailer
-  const mail = {
-    from: "backendfoundation@gmail.com",
-    to: options.email,
-    subject: options.subject,
-    text: emailTextual,
-    html: emailHtml,
-  };
-
   //  handle the error
   try {
-    await transporter.sendMail(mail);
+    // // Mail options for sending email using resend mail
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: options.email,
+      subject: options.subject,
+      text: emailTextual,
+      html: emailHtml,
+    });
   } catch (error) {
-    console.error("Email sending error:", error.message);
     throw new Error(`Failed to send email: ${error.message}`);
   }
 };
@@ -47,37 +35,38 @@ const emailVerificationMailContent = (username, verificationUrl) => {
   return {
     body: {
       name: username,
-      intro: "Welcome to our application and we are happy to connect with you",
+      intro:
+        "Welcome! Please verify your email address to activate your account.",
       action: {
-        instruction: "To verify user email please click on following button",
+        instruction: "Click the button below to verify your email address.",
         button: {
-          color: "#E8C552",
+          color: "#2563EB",
           text: "Verify Email",
           link: verificationUrl,
         },
       },
       outro:
-        "Please complete this process and feel free to ask problems for query",
+        "If you did not create this account, you can safely ignore this email.",
     },
   };
 };
 
-// generate forgot password template
+// generate Reset password template
 const forgotPasswordMailContent = (username, forgotPasswordUrl) => {
   return {
     body: {
       name: username,
-      intro: "Welcome to our application and we are happy to connect with you",
+      intro: "We received a request to reset the password for your account.",
       action: {
-        instruction: "To Reset Password please click on following button",
+        instruction: "Click the button below to create a new password.",
         button: {
-          color: "#E8C552",
-          text: "Forgot Password",
+          color: "#2563EB",
+          text: "Reset Password",
           link: forgotPasswordUrl,
         },
       },
       outro:
-        "Please complete this process and feel free to ask problems for query",
+        "If you did not request a password reset, you can safely ignore this email. This link will expire shortly for security reasons.",
     },
   };
 };

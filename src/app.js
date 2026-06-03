@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 // Serve static files from public folder
 app.use(express.static("./public"));
+
 app.use(
   cors({
     origin: "http://localhost:5500",
@@ -28,11 +29,12 @@ app.use("/auth", authRouter);
 
 // Mount health check route
 import healthCheckRoute from "./routes/healthcheck.routes.js";
+import { apiResponse } from "./utils/api-response.js";
 app.use("/healthcheck", healthCheckRoute);
 
-// Default route for root URL
-app.use("/", (req, res) => {
-  res.send("This is '/' route response");
+// handle 4O4
+app.use((req, res) => {
+  res.status(404).json(new apiResponse(404, {}, "4O4 not found"));
 });
 
 export default app;

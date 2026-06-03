@@ -44,7 +44,7 @@ router
 
 // validate and assign the reset forgot password route
 router
-  .route("/reset-password/:resetToken")
+  .route("/reset-password")
   .post(userResetForgotPassword(), validate, resetForgotPassword);
 
 // SECURED ROUTES

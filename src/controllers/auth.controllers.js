@@ -100,19 +100,23 @@ const loginUser = asyncHandler(async (req, res) => {
 
   // check field are empty
   if (!email) {
-    res.status(400).json(new apiResponse(400, {}, "Email is required"));
+    return res.status(400).json(new apiResponse(400, {}, "Email is required"));
   }
 
   // check user is exists or not
   const user = await User.findOne({ email });
   if (!user) {
-    res.status(400).json(new apiResponse(400, {}, "User does not exists"));
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "User does not exists"));
   }
 
   // check password is correct or not
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
-    res.status(401).json(new apiResponse(401, {}, "Invalid credentails"));
+    return res
+      .status(401)
+      .json(new apiResponse(401, {}, "Invalid credentails"));
   }
 
   // check email is verified or not before login and resend email
@@ -369,11 +373,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
   // find the used in database
   const user = await User.findOne({ email });
 
-  // handle error if user not found
+  // Send status 403 if user not found
   if (!user) {
     return res
       .status(404)
-      .json(new apiResponse(404, {}, "User does not exists"));
+      .json(new apiResponse(404, {}, "User does not exists "));
   }
 
   // Generate tokens
@@ -392,7 +396,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     subject: "Password Reset request",
     mailGenContent: forgotPasswordMailContent(
       user.username,
-      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`,
+      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}?token=${unHashedToken}`,
     ),
   });
 
@@ -406,17 +410,27 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 // reset the forgot password
 const resetForgotPassword = asyncHandler(async (req, res) => {
+  console.log("Reset controller hit");
   // get the data
-  const { resetToken } = req.params;
-  const { newPassword } = req.body;
 
-  console.log(resetToken);
+  const { token, newPassword } = req.body;
+
+  console.log(token);
+
+  if (!token) {
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "Reset token is required"));
+  }
+
+  if (!newPassword) {
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "New password is required"));
+  }
 
   // create a hash token
-  let hashedToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
+  let hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   // find the user in database
   const user = await User.findOne({
@@ -424,20 +438,20 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
     forgotPasswordExpiry: { $gt: Date.now() },
   });
 
-  console.log(Date.now());
-  console.log(user?.forgotPasswordExpiry);
-
   // handle the error if user is not found
   if (!user) {
-    throw new apiError(400, "Token is invalid or expired");
+    return res
+      .status(401)
+      .json(new apiResponse(401, {}, "Token is invalid or expired"));
   }
-
-  // update the database data fields
-  user.forgotPasswordExpiry = undefined;
-  user.forgotPasswordToken = undefined;
 
   // set a new password
   user.password = newPassword;
+  // update the database data fields
+  user.forgotPasswordExpiry = undefined;
+  user.forgotPasswordToken = undefined;
+  // Mark fields as modified so Mongoose saves them
+
   await user.save({ validateBeforeSave: false });
 
   // response back to user
@@ -456,7 +470,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   // handle the error if user is not found
   if (!user) {
-    throw new apiError(404, "User does not exists");
+    return res
+      .status(404)
+      .json(new apiResponse(404, {}, "User does not exists"));
   }
 
   // Verify if the old password matches the database
@@ -464,7 +480,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   // if the password is not match to old database password throw error
   if (!isPasswordValid) {
-    throw new apiError(400, "Invalid old password");
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "Incorrect old password"));
   }
 
   // update and save the password in database

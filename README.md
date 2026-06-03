@@ -195,6 +195,14 @@ npm i cookie-parser
 
 ---
 
+Installs Resend for handling and sending transactional emails.
+
+```bash
+npm install resend
+```
+
+---
+
 ---
 
 ## API Documentation
@@ -267,7 +275,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-### `POST /auth/reset-password/:resetToken`
+### `POST /auth/reset-password`
 
 Reset the user's password using the reset token received via email.
 <br>
@@ -275,6 +283,7 @@ Reset the user's password using the reset token received via email.
 
 ```json
 {
+  "token": "RESET_TOKEN_FROM_EMAIL",
   "newPassword": "NewPass123"
 }
 ```

@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 
 // validate the user registration data
 const userRegisterValidator = () => {

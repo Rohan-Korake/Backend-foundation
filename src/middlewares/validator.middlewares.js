@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import { apiError } from "../utils/api-error.js";
 import { response } from "express";
+import { apiResponse } from "../utils/api-response.js";
 
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -17,5 +18,7 @@ export const validate = (req, res, next) => {
   });
 
   //  error response tp API request
-  throw new apiError(402, "Recieved data in invalid", extractedErrors);
+  return res
+    .status(402)
+    .json(new apiResponse(402, { extractedErrors }, "Invalid data"));
 };
