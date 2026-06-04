@@ -1,4 +1,22 @@
+<p align="center">
+  <img src="./public/images/icon.svg" width="15%" />
+</p>
+
 <h1 align="center"><b>Backend Foundation</b></h1>
+
+<p align="center">
+<img src="https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E" />
+<img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white" />
+<img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" />
+<img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" />
+<img src="https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white" />
+<img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+<img src="https://img.shields.io/badge/bcrypt-003A70?style=for-the-badge&logo=keybase&logoColor=white" />
+<img src="https://img.shields.io/badge/Nodemailer-2C3E50?style=for-the-badge&logo=gmail&logoColor=white" />
+<img src="https://img.shields.io/badge/Nodemon-76D04B?style=for-the-badge&logo=nodemon&logoColor=white" />
+<img src="https://img.shields.io/badge/ImageKit-FF6B00?style=for-the-badge&logo=cloudflare&logoColor=white" />
+<img src="https://img.shields.io/badge/Resend-000000?style=for-the-badge&logo=gmail&logoColor=EA4335" />
+</p>
 
 Backend Foundation is my personal backend learning repository where I document and practice core backend development concepts by building real-world projects using Node.js, Express.js, and MongoDB. This repository tracks my journey of learning server-side development, authentication, APIs, database integration, and scalable backend architecture.
 
