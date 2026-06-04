@@ -32,7 +32,7 @@ router.route("/register").post(userRegisterValidator(), validate, registerUser);
 router.route("/login").post(userLoginValidator(), validate, loginUser);
 
 // Assign the verify email route
-router.route("/verify-email/:verificationToken").get(verifyEmail);
+router.route("/verify-email").post(verifyEmail);
 
 // Assign the refresh Access Token route
 router.route("/refresh-token").post(refreshAccessToken);
@@ -46,6 +46,9 @@ router
 router
   .route("/reset-password")
   .post(userResetForgotPassword(), validate, resetForgotPassword);
+
+//  validate JWT and assign the resend email verification route
+router.route("/resend-email-verification").post(resendEmailVerification);
 
 // SECURED ROUTES
 
@@ -64,10 +67,5 @@ router
     validate,
     changeCurrentPassword,
   );
-
-//  validate JWT and assign the resend email verification route
-router
-  .route("/resend-email-verification")
-  .post(verifyJWT, resendEmailVerification);
 
 export default router;

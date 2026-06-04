@@ -1,4 +1,4 @@
-# Backend Foundation
+<h1 align="center"><b>Backend Foundation</b></h1>
 
 Backend Foundation is my personal backend learning repository where I document and practice core backend development concepts by building real-world projects using Node.js, Express.js, and MongoDB. This repository tracks my journey of learning server-side development, authentication, APIs, database integration, and scalable backend architecture.
 
@@ -207,6 +207,14 @@ npm install resend
 
 ## API Documentation
 
+### Content Type
+
+All request bodies must use:
+
+```http
+Content-Type: application/json
+```
+
 ### `POST auth/register`
 
 **Request Body:**
@@ -221,28 +229,28 @@ npm install resend
 
 ---
 
-### `GET auth/verify-email/:token`
+### `POST auth/verify-email`
 
-Verify a user's email address using the verification token sent via email.
+Verify a user's email address using the verification token and email received through the URL parameters
 
-```http
-GET /auth/verify-email/65a8b2f4c1d9e7f8a123456
+**Request Body:**
+
+```json
+{
+  "verificationToken:": "EMAIL_VERIFICATION_TOKEN"
+}
 ```
 
 ---
 
 ### `POST auth/resend-email-verification`
 
-**Protected Route:**
-
-```http
-Authorization: Bearer <access_token>
-```
-
+Send a new email verification link by using the expired token and email received through the URL parameters when the previous verification token has expired.
 **Request Body:**
 
 ```json
 {
+  "expiredToken": "EXPIRED_TOKEN",
   "email": "testuser@example.com"
 }
 ```

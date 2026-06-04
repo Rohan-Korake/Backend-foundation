@@ -69,7 +69,7 @@ const registerUser = asyncHandler(async (req, res) => {
     subject: "Please verify your email",
     mailGenContent: emailVerificationMailContent(
       user.username,
-      `${req.protocol}://${req.get("host")}/verify-email/${unHashedToken}`,
+      `${process.env.VERIFY_EMAIL_URL}?token=${unHashedToken}&email=${user.email}`,
     ),
   });
 
@@ -138,7 +138,7 @@ const loginUser = asyncHandler(async (req, res) => {
       subject: "Please verify your email",
       mailGenContent: emailVerificationMailContent(
         user.username,
-        `${req.protocol}://${req.get("host")}/verify-email/${unHashedToken}`,
+        `${process.env.VERIFY_EMAIL_URL}?token=${unHashedToken}&email=${user.email}`,
       ),
     });
 
@@ -227,11 +227,13 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 // send email verification
 const verifyEmail = asyncHandler(async (req, res) => {
   // Extract the verification token from the URL path parameters
-  const { verificationToken } = req.params;
+  const { verificationToken } = req.body;
 
   // Send error response if the token is not present in url path
   if (!verificationToken) {
-    throw new apiError(400, "Email Verification Token is missing");
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "Verification link is invalid."));
   }
 
   // Hash the incoming plain-text token
@@ -246,14 +248,12 @@ const verifyEmail = asyncHandler(async (req, res) => {
     emailVerificationExpiry: { $gt: Date.now() },
   });
 
-  // if the token is expired means the user is not found then show error
+  // if the token is expired
   if (!user) {
-    throw new apiError(400, "Token is invalid or expired");
+    return res
+      .status(401)
+      .json(new apiResponse(400, {}, "Oops! This link has expired."));
   }
-
-  // Reset verification fields since email is verified
-  user.emailVerificationToken = undefined;
-  user.emailVerificationExpiry = undefined;
 
   // Mark that email is verified
   user.isEmailVerified = true;
@@ -264,50 +264,68 @@ const verifyEmail = asyncHandler(async (req, res) => {
   // Send back a success response to the frontend
   res
     .status(200)
-    .json(new apiResponse(200, { isEmailVerified: true }, "Email is verified"));
+    .json(
+      new apiResponse(
+        200,
+        { isEmailVerified: true },
+        "Email Verified Successfully!",
+      ),
+    );
 });
 
 // resend the email verification
 const resendEmailVerification = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
-  // Find the used in database
+  // check the data present or not
+  if (!email) {
+    return res
+      .status(400)
+      .json(new apiResponse(400, {}, "Invalid request data. Missing email."));
+  }
+
+  // Find the user by email
   const user = await User.findOne({ email });
 
   // send error response if the user in not exists
   if (!user) {
-    throw new apiError(404, "Used is not exists");
+    return res
+      .status(404)
+      .json(new apiResponse(404, {}, "User does not exist"));
   }
 
   // handle response if user is already verified email
   if (user.isEmailVerified) {
-    throw new apiError(409, "Email is already verified");
+    return res
+      .status(409)
+      .json(new apiResponse(409, {}, "Email is already verified"));
   }
 
-  // Generate tokens
+  // Generate NEW tokens (don't need to validate old token)
   const { unHashedToken, hashedToken, tokenExpiry } =
     user.generateTemporaryToken();
 
-  // Update fields
+  // Update fields with NEW token
   user.emailVerificationToken = hashedToken;
   user.emailVerificationExpiry = tokenExpiry;
 
   //   save the data in DB
   await user.save({ validateBeforeSave: false });
 
-  //   send email to user
+  //   send email to user with NEW token
   await sendEmail({
     email: user.email,
     subject: "Please verify your email",
     mailGenContent: emailVerificationMailContent(
       user.username,
-      `${req.protocol}://${req.get("host")}/verify-email/${unHashedToken}`,
+      `${process.env.VERIFY_EMAIL_URL}?token=${unHashedToken}&email=${user.email}`,
     ),
   });
 
+  // respond back to user with 200 status
   return res
     .status(200)
-    .json(new apiResponse(200, {}, "Email verification send successfully"));
+    .json(new apiResponse(200, {}, "Email verification sent successfully"));
 });
 
 // Refresh access and refresh tokens using a valid incoming refresh token
@@ -410,12 +428,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 // reset the forgot password
 const resetForgotPassword = asyncHandler(async (req, res) => {
-  console.log("Reset controller hit");
   // get the data
-
   const { token, newPassword } = req.body;
-
-  console.log(token);
 
   if (!token) {
     return res
