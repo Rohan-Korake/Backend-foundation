@@ -23,9 +23,12 @@ app.use(
 );
 
 app.use(cookieParser());
-// Mount auth routes
+
+// Mount routes
 import authRouter from "./routes/auth.routes.js";
+import projectRouter from "./routes/project.routes.js";
 app.use("/auth", authRouter);
+app.use("/projects", projectRouter);
 
 // Mount health check route
 import healthCheckRoute from "./routes/healthcheck.routes.js";
